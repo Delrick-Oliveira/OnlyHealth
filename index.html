@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Only Health</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      #floating-panel {
+        position: absolute;
+        top: 10px;
+        left: 25%;
+        z-index: 5;
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #999;
+        text-align: center;
+        font-family: 'Roboto','sans-serif';
+        line-height: 30px;
+        padding-left: 10px;
+      }
+
+      #floating-panel {
+        background-color: #fff;
+        border: 1px solid #999;
+        left: 25%;
+        padding: 5px;
+        position: absolute;
+        top: 10px;
+        z-index: 5;
+      }
+    </style>
+  </head>
+  <body>
+      <div id="floating-panel">
+          <button onclick="toggleHeatmap()">Toggle Heatmap</button>
+          <button onclick="changeGradient()">Change gradient</button>
+          <button onclick="changeRadius()">Change radius</button>
+          <button onclick="changeOpacity()">Change opacity</button>
+      </div>
+    <div id="map"></div>
+    <script>
+
+      var bairros = [
+           { 'key':'Adrianopolis', 'lat': -3.1173418 , 'long':-60.03001019999999, 'qtd': 319},
+           { 'key':'Aleixo', 'lat': -3.0869431 , 'long':-59.994152799999995, 'qtd': 491 },
+           { 'key':'Alvorada', 'lat': -3.0752159 , 'long':-60.040400699999964, 'qtd': 1484},
+           { 'key':'Armando Mendes', 'lat': -3.0897108 , 'long':-59.9421428, 'qtd': 504},
+           { 'key':'Betania', 'lat': -3.1341656 , 'long':-59.995597799999985, 'qtd': 262},
+           { 'key':'Cachoeirinha', 'lat': -3.1268 , 'long':-60.005713300000025, 'qtd': 581},
+           { 'key':'Centro', 'lat': -3.1298957 , 'long':-60.020659799999976, 'qtd': 1453},
+           { 'key':'Chapada', 'lat': -3.0967957 , 'long':-60.028837299999964, 'qtd': 621},
+           { 'key':'Cidade de Deus', 'lat': -3.0219306 , 'long':-59.94751359999998, 'qtd': 1442},
+           { 'key':'Cidade Nova', 'lat': -3.0362681 , 'long':-59.98548310000001, 'qtd': 2325},
+           { 'key':'Colonia Antonio Aleixo', 'lat': -3.0876383 , 'long':-59.89381219999996, 'qtd': 351},
+           { 'key':'Colonia Oliveira Machado', 'lat': -3.1497201 , 'long':-60.00137799999999, 'qtd': 139},
+           { 'key':'Colonia Santo Antônio', 'lat': -3.0373555 , 'long':-60.01012589999999, 'qtd': 431},
+           { 'key':'Colonia Terra Nova', 'lat': -3.0110435 , 'long':-60.020165299999974, 'qtd': 998},
+           { 'key':'Compensa', 'lat': -3.1037639 , 'long':-60.05785160000005, 'qtd': 1553},
+           { 'key':'Coroado', 'lat': -3.0905755 , 'long':-59.9810602, 'qtd': 1159},
+           { 'key': 'Crespo', 'lat': -3.1436353 , 'long':-59.98259329999996, 'qtd': 391},
+           { 'key': 'Da Paz', 'lat': -3.0573173 , 'long':-60.028837299999964, 'qtd': 345},
+           { 'key': 'Distrito Industrial I', 'lat': -3.123242 , 'long':-59.96236649999997, 'qtd': 69},
+           { 'key': 'Distrito Industrial II', 'lat': -3.0553952 , 'long':-59.90328750000003, 'qtd': 114},
+           { 'key': 'Dom Pedro', 'lat': -3.0845483 , 'long':-60.043749899999966, 'qtd': 332},
+           { 'key': 'Educandos', 'lat': -3.1412091 , 'long':-60.01004879999999, 'qtd': 439},
+           { 'key': 'Flores', 'lat': -3.054504 , 'long':-60.008603600000015, 'qtd': 1394},
+           { 'key': 'Gilberto Mestrinho', 'lat': -3.0703213 , 'long':-59.9175894, 'qtd': 988},
+           { 'key': 'Gloria', 'lat': -3.1227903 , 'long':-60.03534160000004, 'qtd': 208},
+           { 'key': 'Japiim', 'lat': -3.1127248 , 'long':-59.976813900000025, 'qtd': 1083},
+           { 'key': 'Jorge Teixeira', 'lat': -3.0283517 , 'long':-59.92852170000003, 'qtd': 2379},
+           { 'key': 'Lago Azul', 'lat': -2.9733799 , 'long':-60.00899800000002, 'qtd': 180},
+           { 'key': 'Lirio do Vale', 'lat': -3.0688891 , 'long':-60.072541899999976, 'qtd': 397},
+           { 'key': 'Mauazinho', 'lat': -3.1225147 , 'long':-59.93925389999998, 'qtd': 430},
+           { 'key': 'Monte das Oliveiras', 'lat': -3.0039494 , 'long':-59.99441790000003, 'qtd':820 },
+           { 'key': 'Morro da Liberdade', 'lat': -3.1365435 , 'long':-60.00137799999999, 'qtd': 321},
+           { 'key': 'Aparecida', 'lat': -3.1173418 , 'long':-60.03001019999999, 'qtd': 290},
+           { 'key': 'Nossa Senhora das Gracas', 'lat': -3.1041608 , 'long':-60.018720099999996, 'qtd': 573},
+          // { 'key': 'Nova Cidade', 'lat': ver , 'long':ver, 'qtd': 1112},
+           { 'key': 'Nova Esperanca', 'lat': -3.083475 , 'long':-60.05919349999999, 'qtd': 376},
+           { 'key': 'Novo Aleixo', 'lat': -3.0622029 , 'long':-59.97392430000002, 'qtd': 1777},
+           { 'key': 'Novo Israel', 'lat': -3.027249 , 'long':-60.01293909999998, 'qtd': 350},
+           { 'key': 'Parque 10 de Novembro', 'lat': -3.0776883 , 'long':-60.00844129999996, 'qtd': 1328},
+           { 'key': 'Petropolis', 'lat': -3.1088793 , 'long':-59.994152799999995, 'qtd': 877},
+           { 'key': 'Planalto', 'lat': -3.064695 , 'long':-60.054856400000006, 'qtd': 320},
+           { 'key': 'Ponta Negra', 'lat': -3.0482142 , 'long':-60.08955639999999, 'qtd': 147},
+           { 'key': 'Praça 14', 'lat': -3.121538699999999 , 'long':-60.01293909999998, 'qtd': 338},
+           { 'key': 'Presidente Vargas', 'lat': -3.1198871 , 'long':-60.03028269999999, 'qtd': 248},
+           { 'key': 'Puraquequara', 'lat': -3.0586602 , 'long':-59.84531820000001, 'qtd': 166},
+           { 'key': 'Raiz', 'lat': -3.1254752 , 'long':-59.998487899999986, 'qtd': 364},
+           { 'key': 'Redencao', 'lat': -3.0532877 , 'long':-60.040400699999964, 'qtd': 649},
+           { 'key': 'Santa Etelvina', 'lat': -2.9857472 , 'long':-60.00306109999997, 'qtd': 550},
+           { 'key': 'Santa Luzia', 'lat': -3.1405003 , 'long':-60.00499079999997, 'qtd': 193},
+           { 'key': 'Santo Agostinho', 'lat': -3.0924321 , 'long':-60.06497639999998, 'qtd': 396},
+           { 'key': 'Santo Antonio', 'lat': -3.1159486 , 'long':-60.04473729999995, 'qtd': 470},
+           { 'key': 'Sao Francisco', 'lat': -3.1092408 , 'long':-60.005713300000025, 'qtd': 349},
+           { 'key': 'Sao Geraldo', 'lat': -3.1078082, 'long':-60.02670969999997, 'qtd': 324},
+           { 'key': 'Sao Jorge', 'lat': -3.1076222, 'long':-60.03871019999997, 'qtd': 640},
+           { 'key': 'Sao Jose Operario', 'lat': -3.067973799999999, 'long':-59.9479207, 'qtd': 1321},
+           { 'key': 'Sao Lazaro', 'lat': -3.1407527, 'long':-59.995597799999985, 'qtd': 314},
+           { 'key': 'Sao Raimundo', 'lat': -3.1246412, 'long':-60.04184620000001, 'qtd': 353},
+           { 'key': 'Tancredo Neves', 'lat': -3.0544395, 'long':-59.942497600000024, 'qtd': 963},
+           { 'key': 'Taruma', 'lat': -3.0078867, 'long':-60.06063919999997, 'qtd': 619},
+           { 'key': 'Taruma Acu', 'lat': -2.972856600000001, 'long':-60.06063919999997, 'qtd': 294},
+           { 'key': 'Vila Buriti', 'lat': -3.1402698, 'long':-59.9651035, 'qtd': 30},
+           { 'key': 'Vila da Prata', 'lat': -3.1072574, 'long':-60.04762840000001, 'qtd': 260},
+           { 'key': 'Zumbi dos Palmares', 'lat': -3.081137699999999, 'long':-59.94791509999999, 'qtd': 577}
+            ]
+      var map, heatmap, lim;
+      var heatmapData = [];
+      lim = 41092
+      function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 12,
+          center: new google.maps.LatLng(-3.0925754999999997, -60.0184546),
+          mapTypeId: 'roadmap'
+        });
+        
+     heatmap = new google.maps.visualization.HeatmapLayer({
+              data: heatmapData,
+              map: map,
+              radius: 50
+            });
+    var infowindow = new google.maps.InfoWindow({
+      content: ''
+      });
+            
+            var features = [];
+
+      for(i=0 ;i<bairros.length;i++){
+        x = {
+          position: new google.maps.LatLng(bairros[i].lat, bairros[i].long),
+          type: 'people',
+          nome: bairros[i].key,
+          qtd: bairros[i].qtd
+        }
+        features.push(x);
+        y = {
+          location: x.position,
+          weight: x.qtd/lim * 100
+        }
+        heatmapData.push(y);
+        }
+
+       features.forEach(function(feature) {  
+        var marker = new google.maps.Marker({
+          position: feature.position,
+          icon: icons[feature.type].icon,
+          map: map,
+          title: feature.nome + ': ' + String(feature.qtd)
+        });
+        marker.addListener('click', function() {
+          infowindow.setContent(marker.title);
+          infowindow.open(map, marker);
+        });
+      });
+      
+          }
+
+      function toggleHeatmap() {
+              heatmap.setMap(heatmap.getMap() ? null : map);
+            }
+
+      function changeGradient() {
+        var gradient = [
+          'rgba(0, 255, 255, 0)',
+          'rgba(0, 255, 255, 1)',
+          'rgba(0, 191, 255, 1)',
+          'rgba(0, 127, 255, 1)',
+          'rgba(0, 63, 255, 1)',
+          'rgba(0, 0, 255, 1)',
+          'rgba(0, 0, 223, 1)',
+          'rgba(0, 0, 191, 1)',
+          'rgba(0, 0, 159, 1)',
+          'rgba(0, 0, 127, 1)',
+          'rgba(63, 0, 91, 1)',
+          'rgba(127, 0, 63, 1)',
+          'rgba(191, 0, 31, 1)',
+          'rgba(255, 0, 0, 1)'
+        ]
+        heatmap.set('gradient', heatmap.get('gradient') ? null : gradient);
+      }
+
+      function changeRadius() {
+        heatmap.set('radius', heatmap.get('radius') ? null : 50);
+      }
+
+      function changeOpacity() {
+        heatmap.set('opacity', heatmap.get('opacity') ? null : 0.2);
+      }
+
+      var iconBase = 'https://maps.google.com/mapfiles/kml/shapes/';
+      var icons = {
+        parking: {
+          icon: iconBase + 'parking_lot_maps.png'
+        },
+        library: {
+          icon: iconBase + 'library_maps.png'
+        },
+        info: {
+          icon: iconBase + 'info-i_maps.png'
+        },
+        people: {
+          icon: 'https://img.icons8.com/color/32/000000/gender-neutral-user.png'
+        }
+      };
+
+    </script>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyABsc68m3QN2LvranDkLDPlBMej93QByIs&libraries=visualization&callback=initMap">
+    </script>
+  </body>
+</html>
